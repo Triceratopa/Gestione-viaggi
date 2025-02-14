@@ -1,0 +1,53 @@
+package com.progettoSettimanale.Gestione.viaggi.viaggi;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Validated
+public class ViaggioService {
+    private final ViaggioRepository viaggioRepository;
+
+    public ViaggioResponse viaggioResponseFromEntity(Viaggio viaggio) {
+        ViaggioResponse viaggioResponse = new ViaggioResponse();
+        BeanUtils.copyProperties(viaggio, viaggioResponse);
+        return viaggioResponse;
+
+    }
+    public List<ViaggioResponse> viaggioResponseFromEntities(List<Viaggio> viaggi) {
+        return viaggi.stream().map(this::viaggioResponseFromEntity).toList();
+    }
+    public List<ViaggioResponse> findAll() {
+        return viaggioResponseFromEntities(viaggioRepository.findAll());
+    }
+    public Viaggio modify(Long id, ViaggioRequest viaggioRequest) {
+        Viaggio viaggio = findById(id);
+        BeanUtils.copyProperties(viaggioRequest, viaggio);
+         viaggioRepository.save(viaggio);
+        return viaggio;
+    }
+    public Viaggio viaggioFromRequest(ViaggioRequest viaggioRequest) {
+        Viaggio viaggio = new Viaggio();
+        BeanUtils.copyProperties(viaggioRequest, viaggio);
+        return viaggio;
+    }
+    public CreateResponse save(@Valid ViaggioRequest viaggioRequest) {
+        Viaggio viaggio = viaggioFromRequest(viaggioRequest);
+        viaggioRepository.save(viaggio);
+       CreateResponse response = new CreateResponse();
+       BeanUtils.copyProperties(viaggio, response);
+        try {
+            emailService.sendEmail(viaggio.getEmail(), "Benvenuto", "Benvenuto " + " "
+                    + .getEmail());
+        } catch (MessagingException e) {
+            System.out.println("Errore invio email");
+        }
+
+        return response;
+    }
+}
