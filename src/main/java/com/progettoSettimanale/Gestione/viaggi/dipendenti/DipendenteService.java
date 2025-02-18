@@ -33,7 +33,7 @@ public class DipendenteService {
        if (dipendenteRepository.existsByUsername(dipendenteRequest.getUsername())) {
          throw new IllegalArgumentException("Username already exists");
        }else {
-           Dipendente dipendente = findById(id);
+           
            BeanUtils.copyProperties(dipendenteRequest, dipendente);
            dipendenteRepository.save(dipendente);
            return dipendenteResponseFromEntity(dipendente);
